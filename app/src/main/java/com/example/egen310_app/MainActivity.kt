@@ -2,9 +2,8 @@ package com.example.egen310_app
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -25,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var inputStream: InputStream
     var count = 0
     val list: ArrayList<String> = ArrayList()
+    lateinit var handler: Handler
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,22 +51,63 @@ class MainActivity : AppCompatActivity() {
                     outputStream = socket.outputStream
                     inputStream = socket.inputStream
 
+                    handler = object: Handler(Looper.getMainLooper()){
+                        override fun handleMessage(msg: Message) {
+                            super.handleMessage(msg)
+                            handleMsg(msg)
+                        }
+                    }
+
+
                     thread {
                         val bufferedReader: BufferedReader = BufferedReader(InputStreamReader(inputStream))
                         while(true){
                             var data = bufferedReader.readLine()
                             Log.i("READ", data)
-
+                            var msg: Message = Message()
+                            msg.what = 10
+                            msg.obj = data
+                            handler.sendMessage(msg)
                         }
                     }
 
                 }
             }
         }
-
-
     }
 
+
+    lateinit var countDownTimer: CountDownTimer
+    private fun handleMsg(msg: Message){
+        var content = msg.obj as String
+
+
+        if (content == "Hello"){
+            if (this::countDownTimer.isInitialized) {
+                countDownTimer.cancel()
+            }
+
+
+
+            Log.i("HELLO", "Processing command")
+
+            val status : TextView = findViewById(R.id.status)
+            var time = 10
+
+             countDownTimer = object : CountDownTimer(10000, 1000) {
+
+                override fun onTick(millisUntilFinished: Long) {
+                    status.text = "TIME: " + time
+                    time--
+                }
+                override fun onFinish() {
+                    status.text = "Finished"
+                }
+            }
+            countDownTimer.start()
+        }
+
+    }
 
     private fun start_bttn(){
         toast("clicked button")
