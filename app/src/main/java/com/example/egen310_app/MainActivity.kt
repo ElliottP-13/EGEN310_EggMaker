@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -14,6 +15,8 @@ import java.io.InputStreamReader
 import java.io.OutputStream
 import java.util.*
 import java.util.zip.CheckedOutputStream
+import kotlin.collections.ArrayList
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var outputStream: OutputStream
     lateinit var inputStream: InputStream
     var count = 0
+    val list: ArrayList<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,15 @@ class MainActivity : AppCompatActivity() {
                     socket.connect()
                     outputStream = socket.outputStream
                     inputStream = socket.inputStream
+
+                    thread {
+                        val bufferedReader: BufferedReader = BufferedReader(InputStreamReader(inputStream))
+                        while(true){
+                            var data = bufferedReader.readLine()
+                            Log.i("READ", data)
+
+                        }
+                    }
 
                 }
             }
@@ -76,8 +89,7 @@ class MainActivity : AppCompatActivity() {
                     write("0")
                 }
 
-                var bufferedReader: BufferedReader = BufferedReader(InputStreamReader(inputStream))
-                Log.i("READ", bufferedReader.readLine())
+
 
             }
         }
