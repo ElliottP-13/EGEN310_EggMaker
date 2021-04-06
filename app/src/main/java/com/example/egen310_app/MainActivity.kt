@@ -6,6 +6,7 @@ import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import java.io.BufferedReader
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val startButton : Button = findViewById(R.id.start)
+        val startButton : ImageButton = findViewById(R.id.start)
         startButton.setOnClickListener { start_bttn() }
 
         bAdapter = BluetoothAdapter.getDefaultAdapter()

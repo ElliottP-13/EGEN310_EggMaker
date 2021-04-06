@@ -28,7 +28,7 @@ class CircleProgressBar(context: Context, attrs: AttributeSet) : View(context, a
      * Start the progress at 12 o'clock
      */
     private val startAngle = -90
-    private var color = Color.DKGRAY
+    private var color = Color.rgb(255,166,49)
     private var rectF: RectF? = null
     private var backgroundPaint: Paint? = null
     private var foregroundPaint: Paint? = null

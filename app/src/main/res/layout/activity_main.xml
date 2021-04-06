@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
@@ -9,21 +9,27 @@
     android:layout_gravity="center_vertical"
     tools:context=".MainActivity">
 
-    <Button
+    <ImageButton
         android:id="@+id/start"
-        android:layout_width="140dp"
-        android:layout_height="126dp"
+        android:background="@android:color/transparent"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"
         android:text="@string/start"
-        android:layout_gravity="center_horizontal"
         tools:layout_editor_absoluteX="174dp"
-        tools:layout_editor_absoluteY="183dp" />
+        tools:layout_editor_absoluteY="183dp"
+        android:src="@drawable/egg"/>
 
     <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/status"
+        android:layout_below="@id/start"
+        android:layout_marginTop="200dp"
         tools:layout_editor_absoluteX="184dp"
         tools:layout_editor_absoluteY="407dp" />
 
@@ -31,18 +37,20 @@
         android:id="@+id/paired_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
+        android:layout_below="@id/status"
         android:text="No paired devices" />
 
     <com.example.egen310_app.CircleProgressBar
         android:id="@+id/custom_progressBar"
-        android:layout_gravity="center_horizontal"
+        android:layout_centerInParent="true"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_margin="10dp"
-        app:progress="35"
+        app:progress="0"
         app:progressBarThickness="4dp"/>
 
-</LinearLayout>
+</RelativeLayout>
 
 
