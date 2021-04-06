@@ -74,6 +74,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        var status = 0
+        var progressBar = findViewById<CircleProgressBar>(R.id.custom_progressBar)
+        Thread {
+            while (status < 100) {
+                status += 1
+                handler.post {
+                    progressBar.setProgress(status.toFloat())
+                }
+                try {
+                    Thread.sleep(500)
+                }
+                catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+            }
+        }.start()
+
     }
 
 
