@@ -1,7 +1,13 @@
 package com.example.egen310_app
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
@@ -10,6 +16,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -21,12 +28,13 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var bAdapter: BluetoothAdapter
-    lateinit var outputStream: OutputStream
-    lateinit var inputStream: InputStream
-    var count = 0
-    val list: ArrayList<String> = ArrayList()
+    private lateinit var bAdapter: BluetoothAdapter
+    private lateinit var outputStream: OutputStream
+    private lateinit var inputStream: InputStream
     lateinit var handler: Handler
+    private var cooking_bool = false
+
+    val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +44,18 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener { start_bttn() }
         val cooking : ImageButton = findViewById(R.id.cooking)
         cooking.setOnClickListener { cook_bttn() }
+        val progress : CircleProgressBar = findViewById(R.id.custom_progressBar)
 
+        var notificationChannel = NotificationChannel("egg_ready", "Egg Completion", NotificationManager.IMPORTANCE_HIGH)
+
+        notificationChannel.description = "Notifications when the eggs are ready"
+        notificationChannel.enableLights(true)
+        notificationChannel.lightColor = Color.RED
+        notificationChannel.enableVibration(true)
+        notificationChannel.vibrationPattern =
+                longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+
+        mNotificationManager.createNotificationChannel(notificationChannel)
 
 
         bAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -96,7 +115,11 @@ class MainActivity : AppCompatActivity() {
             Log.i("STATUS_UPDATE", update.toString())
             progressBar.setProgress(update * 100)
         }
+        else if (content.contains("DONE")){
+            cooking_bool = false
 
+            showNotification()
+        }
     }
 
     private fun start_bttn(){
@@ -120,16 +143,35 @@ class MainActivity : AppCompatActivity() {
                 Log.i("BLUETOOTH", "Attempting to send data")
 
                 write("1")
+                cooking_bool = true
             }
         }
     }
 
     private fun cook_bttn(){
-        val startButton : ImageButton = findViewById(R.id.start)
-        startButton.visibility = View.VISIBLE
-        val cooking : ImageButton = findViewById(R.id.cooking)
-        cooking.visibility = View.GONE
-        toast("Egg is cooking!")
+        if (cooking_bool){
+            toast("Egg is cooking! Please wait")
+        }
+        else {
+            val startButton: ImageButton = findViewById(R.id.start)
+            startButton.visibility = View.VISIBLE
+            val cooking: ImageButton = findViewById(R.id.cooking)
+            cooking.visibility = View.GONE
+            val progressBar: CircleProgressBar = findViewById(R.id.custom_progressBar)
+            progressBar.setProgress(0.toFloat())
+        }
+    }
+
+    fun showNotification() {
+        val mBuilder = NotificationCompat.Builder(applicationContext, "egg_ready")
+                .setSmallIcon(R.mipmap.ic_launcher) // notification icon
+                .setContentTitle("Eggs are ready") // title for notification
+                .setContentText("Your eggs are done cooking! Go pick them up and enjoy!")// message for notification
+                .setAutoCancel(true) // clear notification after click
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        mBuilder.setContentIntent(pi)
+        mNotificationManager.notify(0, mBuilder.build())
     }
 
     private fun toast(msg: String){
