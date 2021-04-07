@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothSocket
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -33,6 +34,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val startButton : ImageButton = findViewById(R.id.start)
         startButton.setOnClickListener { start_bttn() }
+        val cooking : ImageButton = findViewById(R.id.cooking)
+        cooking.setOnClickListener { cook_bttn() }
+
+
 
         bAdapter = BluetoothAdapter.getDefaultAdapter()
         if (bAdapter == null || !bAdapter.isEnabled){
@@ -76,63 +81,33 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        var status = 0
-        var progressBar = findViewById<CircleProgressBar>(R.id.custom_progressBar)
-        Thread {
-            while (status < 100) {
-                status += 1
-                handler.post {
-                    progressBar.setProgress(status.toFloat())
-                }
-                try {
-                    Thread.sleep(500)
-                }
-                catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-            }
-        }.start()
 
     }
 
 
     lateinit var countDownTimer: CountDownTimer
     private fun handleMsg(msg: Message){
-        var content = msg.obj as String
+        val content = msg.obj as String
 
 
-        if (content == "Hello"){
-            if (this::countDownTimer.isInitialized) {
-                countDownTimer.cancel()
-            }
-
-
-
-            Log.i("HELLO", "Processing command")
-
-            val status : TextView = findViewById(R.id.status)
-            var time = 10
-
-             countDownTimer = object : CountDownTimer(10000, 1000) {
-
-                override fun onTick(millisUntilFinished: Long) {
-                    status.text = "TIME: " + time
-                    time--
-                }
-                override fun onFinish() {
-                    status.text = "Finished"
-                }
-            }
-            countDownTimer.start()
+        if (content.contains("STATUS:")){
+            val update = content.split(':')[1].toFloat()
+            var progressBar = findViewById<CircleProgressBar>(R.id.custom_progressBar)
+            Log.i("STATUS_UPDATE", update.toString())
+            progressBar.setProgress(update * 100)
         }
 
     }
 
     private fun start_bttn(){
         toast("clicked button")
+        val startButton : ImageButton = findViewById(R.id.start)
+//        startButton.isEnabled = false
+        startButton.visibility = View.GONE
+        val cooking : ImageButton = findViewById(R.id.cooking)
+//        cooking.isEnabled = true
+        cooking.visibility = View.VISIBLE
         val status : TextView = findViewById(R.id.status)
-        count += 1
-        status.text = "Count: " + count
         val paired : TextView = findViewById(R.id.paired_devices)
         paired.text = "Paired Devices"
         val devices = bAdapter.bondedDevices
@@ -144,16 +119,17 @@ class MainActivity : AppCompatActivity() {
                 paired.append("\nDevice: $deviceName, $deviceAddr")
                 Log.i("BLUETOOTH", "Attempting to send data")
 
-                if(count % 2 == 0){
-                    write("1")
-                } else{
-                    write("0")
-                }
-
-
-
+                write("1")
             }
         }
+    }
+
+    private fun cook_bttn(){
+        val startButton : ImageButton = findViewById(R.id.start)
+        startButton.visibility = View.VISIBLE
+        val cooking : ImageButton = findViewById(R.id.cooking)
+        cooking.visibility = View.GONE
+        toast("Egg is cooking!")
     }
 
     private fun toast(msg: String){

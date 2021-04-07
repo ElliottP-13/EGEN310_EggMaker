@@ -21,6 +21,19 @@
         tools:layout_editor_absoluteY="183dp"
         android:src="@drawable/egg"/>
 
+    <ImageButton
+        android:id="@+id/cooking"
+        android:background="@android:color/transparent"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"
+        android:text="@string/start"
+        tools:layout_editor_absoluteX="174dp"
+        tools:layout_editor_absoluteY="183dp"
+        android:visibility="gone"
+        android:src="@drawable/scrambled"/>
+
     <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"
