@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">EGEN310_app</string>
+    <string name="app_name">Keur-egg — EGEN310</string>
     <string name="start">Start</string>
-    <string name="status">Nothing Happening</string>
+    <string name="status">Hit the egg to start cooking!</string>
+    <string name="cooking">Your eggs are cooking!</string>
+    <string name="ready">Your eggs are ready!!!</string>
 </resources>

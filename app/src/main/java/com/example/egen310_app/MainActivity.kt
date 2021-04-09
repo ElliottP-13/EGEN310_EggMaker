@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var handler: Handler
     private var cooking_bool = false
 
-    val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    lateinit var mNotificationManager: NotificationManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,16 +44,16 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener { start_bttn() }
         val cooking : ImageButton = findViewById(R.id.cooking)
         cooking.setOnClickListener { cook_bttn() }
-        val progress : CircleProgressBar = findViewById(R.id.custom_progressBar)
+
+        mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         var notificationChannel = NotificationChannel("egg_ready", "Egg Completion", NotificationManager.IMPORTANCE_HIGH)
 
         notificationChannel.description = "Notifications when the eggs are ready"
         notificationChannel.enableLights(true)
         notificationChannel.lightColor = Color.RED
+//        notificationChannel.vibrationPattern = longArrayOf(2000, 1000)
         notificationChannel.enableVibration(true)
-        notificationChannel.vibrationPattern =
-                longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
 
         mNotificationManager.createNotificationChannel(notificationChannel)
 
@@ -67,16 +67,19 @@ class MainActivity : AppCompatActivity() {
             for (device in devices){
                 val deviceName = device.name
                 val deviceAddr = device
-                if (deviceName == "HC-05") {
+                if (deviceName == "HC-05") { // Connect to egg maker
                     Log.i("BLUETOOTH", "Init")
                     var uuid = device.uuids[0].uuid
                     Log.i("BLUETOOTH", "UUID OF DEVICE: ${uuid.toString()}" )
                     var socket : BluetoothSocket = device.createRfcommSocketToServiceRecord(uuid)
+
+                    // if we aren't connected, then connect to socket
+                    Log.i("BLUETOOTH", "Starting Connection")
                     socket.connect()
                     outputStream = socket.outputStream
                     inputStream = socket.inputStream
 
-                    handler = object: Handler(Looper.getMainLooper()){
+                    handler = object : Handler(Looper.getMainLooper()) {
                         override fun handleMessage(msg: Message) {
                             super.handleMessage(msg)
                             handleMsg(msg)
@@ -84,9 +87,10 @@ class MainActivity : AppCompatActivity() {
                     }
 
 
-                    thread {
-                        val bufferedReader: BufferedReader = BufferedReader(InputStreamReader(inputStream))
-                        while(true){
+                    thread { // thread to constantly check for new messages
+                        val bufferedReader: BufferedReader =
+                            BufferedReader(InputStreamReader(inputStream))
+                        while (true) {
                             var data = bufferedReader.readLine()
                             Log.i("READ", data)
                             var msg: Message = Message()
@@ -95,16 +99,18 @@ class MainActivity : AppCompatActivity() {
                             handler.sendMessage(msg)
                         }
                     }
-
                 }
             }
         }
 
+//        showNotification()
+
 
     }
 
-
-    lateinit var countDownTimer: CountDownTimer
+    /**
+     * Handles the messages from the bluetooth device.
+     */
     private fun handleMsg(msg: Message){
         val content = msg.obj as String
 
@@ -118,36 +124,42 @@ class MainActivity : AppCompatActivity() {
         else if (content.contains("DONE")){
             cooking_bool = false
 
+            val status : TextView = findViewById(R.id.status)
+            status.text = getString(R.string.ready)
+
             showNotification()
         }
     }
 
+    /**
+     * What happens when start button (egg) is clicked
+     */
     private fun start_bttn(){
         toast("clicked button")
         val startButton : ImageButton = findViewById(R.id.start)
-//        startButton.isEnabled = false
-        startButton.visibility = View.GONE
+        startButton.isEnabled = false
+        startButton.visibility = View.INVISIBLE
         val cooking : ImageButton = findViewById(R.id.cooking)
-//        cooking.isEnabled = true
+        cooking.isEnabled = true
         cooking.visibility = View.VISIBLE
         val status : TextView = findViewById(R.id.status)
-        val paired : TextView = findViewById(R.id.paired_devices)
-        paired.text = "Paired Devices"
         val devices = bAdapter.bondedDevices
 
         for (device in devices){
             val deviceName = device.name
             val deviceAddr = device
             if (deviceName == "HC-05") {
-                paired.append("\nDevice: $deviceName, $deviceAddr")
                 Log.i("BLUETOOTH", "Attempting to send data")
-
                 write("1")
                 cooking_bool = true
+                status.text = getString(R.string.cooking)
             }
         }
     }
 
+    /**
+     * what happens when cook button (frying pan) is clicked
+     */
     private fun cook_bttn(){
         if (cooking_bool){
             toast("Egg is cooking! Please wait")
@@ -155,29 +167,44 @@ class MainActivity : AppCompatActivity() {
         else {
             val startButton: ImageButton = findViewById(R.id.start)
             startButton.visibility = View.VISIBLE
+            startButton.isEnabled = true
             val cooking: ImageButton = findViewById(R.id.cooking)
-            cooking.visibility = View.GONE
+            cooking.visibility = View.INVISIBLE
+            cooking.isEnabled = false
             val progressBar: CircleProgressBar = findViewById(R.id.custom_progressBar)
             progressBar.setProgress(0.toFloat())
+
+            val status : TextView = findViewById(R.id.status)
+            status.text = getString(R.string.status)
+
         }
     }
 
+    /**
+     * Shows a notification to the user when eggs are done!
+     */
     fun showNotification() {
         val mBuilder = NotificationCompat.Builder(applicationContext, "egg_ready")
                 .setSmallIcon(R.mipmap.ic_launcher) // notification icon
                 .setContentTitle("Eggs are ready") // title for notification
                 .setContentText("Your eggs are done cooking! Go pick them up and enjoy!")// message for notification
                 .setAutoCancel(true) // clear notification after click
-        val intent = Intent(applicationContext, MainActivity::class.java)
-        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        mBuilder.setContentIntent(pi)
+//        val intent = Intent(applicationContext, MainActivity::class.java)
+//        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_NO_CREATE)
+//        mBuilder.setContentIntent(pi)
         mNotificationManager.notify(0, mBuilder.build())
     }
 
+    /**
+     * Makes a toast message (word bubble on screen)
+     */
     private fun toast(msg: String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Writes to bluetooth output
+     */
     private fun write(msg: String){
         val x : ByteArray = msg.toByteArray()
         outputStream.write(x);

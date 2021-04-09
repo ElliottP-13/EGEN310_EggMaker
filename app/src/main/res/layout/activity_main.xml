@@ -40,20 +40,13 @@
         android:layout_centerHorizontal="true"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:textSize="20sp"
+        android:fontFamily="sans-serif-medium"
         android:text="@string/status"
         android:layout_below="@id/start"
         android:layout_marginTop="200dp"
         tools:layout_editor_absoluteX="184dp"
         tools:layout_editor_absoluteY="407dp" />
-
-    <TextView
-        android:id="@+id/paired_devices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center_horizontal"
-        android:layout_below="@id/status"
-        android:text="No paired devices" />
 
     <com.example.egen310_app.CircleProgressBar
         android:id="@+id/custom_progressBar"
